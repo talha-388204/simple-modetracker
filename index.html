@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodFlow | Tracking Your Vibe</title>
+    
+    <!-- Design: Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0a0b0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            /* Dark Mode (Default) */
+            --primary: #22d3ee;
+            --primary-glow: rgba(34, 211, 238, 0.3);
+            --bg: #0a0b0f;
+            --card-bg: #111318;
+            --card-border: rgba(255, 255, 255, 0.06);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-gradient: linear-gradient(90deg, #22d3ee, #818cf8);
+            --bg-gradient: radial-gradient(circle at 0% 0%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+                           radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.08) 0%, transparent 50%);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --primary: #0891b2;
+            --primary-glow: rgba(8, 145, 178, 0.2);
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-dim: #64748b;
+            --accent-gradient: linear-gradient(90deg, #0891b2, #4f46e5);
+            --bg-gradient: radial-gradient(circle at 0% 0%, rgba(8, 145, 178, 0.1) 0%, transparent 50%),
+                           radial-gradient(circle at 100% 100%, rgba(79, 70, 229, 0.1) 0%, transparent 50%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            background-image: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px;
+            line-height: 1.5;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px;
+            transition: background-color 0.4s ease;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .mood-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: rgba(125, 125, 125, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 16px 8px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mood-btn:hover {
+            background: rgba(125, 125, 125, 0.1);
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .mood-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mood-emoji {
+            font-size: 1.75rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .mood-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 8px;
+        }
+
+        .history-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .item-emoji-box {
+            width: 44px;
+            height: 44px;
+            background: rgba(125, 125, 125, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .item-info .mood-name {
+            display: block;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: capitalize;
+        }
+
+        .item-info .mood-time {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+            border: 2px dashed var(--card-border);
+            border-radius: 24px;
+        }
+
+        @media (max-width: 400px) {
+            .mood-grid { grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); }
+            .mood-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Dark Mode">
+                <span id="theme-icon">🌙</span>
+            </button>
+            <h1>MoodFlow</h1>
+            <p class="subtitle">Emotional Rhythm Tracker</p>
+        </header>
+
+        <main>
+            <section class="card">
+                <p class="card-title">Check-in</p>
+                <div class="mood-grid" id="mood-selector">
+                    <button class="mood-btn" data-mood="excited" data-emoji="🤩">
+                        <span class="mood-emoji">🤩</span>
+                        <span class="mood-label">Excited</span>
+                    </button>
+                    <button class="mood-btn" data-mood="happy" data-emoji="😊">
+                        <span class="mood-emoji">😊</span>
+                        <span class="mood-label">Happy</span>
+                    </button>
+                    <button class="mood-btn" data-mood="neutral" data-emoji="😐">
+                        <span class="mood-emoji">😐</span>
+                        <span class="mood-label">Neutral</span>
+                    </button>
+                    <button class="mood-btn" data-mood="sad" data-emoji="😔">
+                        <span class="mood-emoji">😔</span>
+                        <span class="mood-label">Sad</span>
+                    </button>
+                    <button class="mood-btn" data-mood="tired" data-emoji="🥱">
+                        <span class="mood-emoji">🥱</span>
+                        <span class="mood-label">Tired</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="history-section">
+                <div class="history-header">
+                    <h2 class="history-title">Recent Logs</h2>
+                    <button class="clear-btn" id="clear-all">Clear History</button>
+                </div>
+                <div id="history-list" class="history-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const CONFIG = {
+            storageKey: 'moodflow_logs',
+            themeKey: 'moodflow_theme',
+            maxLogs: 50
+        };
+
+        const state = {
+            logs: JSON.parse(localStorage.getItem(CONFIG.storageKey)) || [],
+            theme: localStorage.getItem(CONFIG.themeKey) || 'dark'
+        };
+
+        const DOM = {
+            moodSelector: document.getElementById('mood-selector'),
+            historyList: document.getElementById('history-list'),
+            clearBtn: document.getElementById('clear-all'),
+            themeToggle: document.getElementById('theme-toggle'),
+            themeIcon: document.getElementById('theme-icon'),
+            html: document.documentElement
+        };
+
+        function init() {
+            applyTheme(state.theme);
+            renderLogs();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            DOM.moodSelector.addEventListener('click', (e) => {
+                const btn = e.target.closest('.mood-btn');
+                if (!btn) return;
+
+                const mood = btn.dataset.mood;
+                const emoji = btn.dataset.emoji;
+                addMoodLog(mood, emoji);
+                
+                btn.style.borderColor = 'var(--primary)';
+                setTimeout(() => btn.style.borderColor = 'var(--card-border)', 200);
+            });
+
+            DOM.clearBtn.addEventListener('click', () => {
+                if (state.logs.length === 0) return;
+                if (confirm('Wipe your history?')) {
+                    state.logs = [];
+                    saveAndRender();
+                }
+            });
+
+            DOM.themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        function toggleTheme() {
+            const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+            state.theme = newTheme;
+            localStorage.setItem(CONFIG.themeKey, newTheme);
+            applyTheme(newTheme);
+        }
+
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            DOM.themeIcon.innerText = theme === 'dark' ? '🌙' : '☀️';
+            // Update browser theme color for PWA
+            document.querySelector("meta[name='theme-color']").setAttribute("content", theme === 'dark' ? '#0a0b0f' : '#f1f5f9');
+        }
+
+        function addMoodLog(mood, emoji) {
+            const newLog = {
+                id: Date.now(),
+                mood,
+                emoji,
+                timestamp: new Date().toISOString()
+            };
+            state.logs.unshift(newLog);
+            if (state.logs.length > CONFIG.maxLogs) state.logs.pop();
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify(state.logs));
+            renderLogs();
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const day = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            return `${time} • ${day}`;
+        }
+
+        function renderLogs() {
+            if (state.logs.length === 0) {
+                DOM.historyList.innerHTML = `<div class="empty-state"><p>No data yet. Tap an emoji to log.</p></div>`;
+                return;
+            }
+
+            DOM.historyList.innerHTML = state.logs.map(log => `
+                <div class="history-item">
+                    <div class="item-left">
+                        <div class="item-emoji-box">${log.emoji}</div>
+                        <div class="item-info">
+                            <span class="mood-name">${log.mood}</span>
+                            <span class="mood-time">${formatTime(log.timestamp)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        init();
+
+        // PWA Boilerplate (Internalized)
+        (function(){
+            var m={name:"MoodFlow Tracker",short_name:"MoodFlow",start_url:".",display:"standalone",theme_color:"#0a0b0f",background_color:"#0a0b0f",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2322d3ee' width='100' height='100' rx='20'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50' font-family='sans-serif' font-weight='bold'>M</text></svg>",sizes:"512x512",type:"image/svg+xml"}]};
+            var b=new Blob([JSON.stringify(m)],{type:"application/json"});
+            var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(b);document.head.appendChild(l);
+            if("serviceWorker" in navigator){
+                var sw="self.addEventListener('fetch', function(e){ e.respondWith(fetch(e.request).catch(()=> caches.match(e.request))); });";
+                var sb=new Blob([sw],{type:"application/javascript"});
+                navigator.serviceWorker.register(URL.createObjectURL(sb)).catch(()=>{});
+            }
+        })();
+    </script>
+</body>
+</html>
